@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Emergency Messaging System</title>
+    <link rel="stylesheet" href="css/style.css?v=2">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+    <div id="app">
+        <div id="login-page" class="page">
+            <div class="login-container">
+                <div class="login-header">
+                    <img src="logo.png?v=3" alt="EMS Logo" class="login-logo">
+                    <h1>Emergency Messaging System</h1>
+                    <p>Secure emergency communication and incident management platform</p>
+                </div>
+                <div class="login-card">
+                    <div class="auth-tabs">
+                        <button class="auth-tab active" onclick="switchAuthTab('login')">Sign In</button>
+                        <button class="auth-tab" onclick="switchAuthTab('register')">Register</button>
+                    </div>
+
+                    <div id="auth-login">
+                        <div class="form-group">
+                            <label for="login-email">Email</label>
+                            <input type="email" id="login-email" class="form-input" placeholder="your@email.com" autocomplete="email">
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Password</label>
+                            <input type="password" id="login-password" class="form-input" placeholder="Enter your password" autocomplete="current-password">
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="handleEmailLogin()">Sign In</button>
+                        <div style="text-align:center;margin-top:10px;"><a href="#" onclick="showForgotPassword()" style="font-size:12px;color:var(--color-primary);text-decoration:none;">Forgot password?</a></div>
+
+                        <div class="login-divider"><span>or</span></div>
+
+                        <button id="google-login-btn" class="btn btn-google" onclick="handleGoogleLogin()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                            </svg>
+                            Sign in with Google
+                        </button>
+                    </div>
+
+                    <div id="auth-register" class="hidden">
+                        <div class="form-group">
+                            <label for="reg-name">Display Name</label>
+                            <input type="text" id="reg-name" class="form-input" placeholder="Your full name" autocomplete="name">
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-email">Email</label>
+                            <input type="email" id="reg-email" class="form-input" placeholder="your@email.com" autocomplete="email">
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-password">Password (min. 6 characters)</label>
+                            <input type="password" id="reg-password" class="form-input" placeholder="Create a password" autocomplete="new-password">
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-role">I am a...</label>
+                            <select id="reg-role" class="form-input">
+                                <option value="victim">Victim / Person in Need</option>
+                                <option value="responder">Emergency Provider / Helper</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="handleRegister()">Create Account</button>
+                    </div>
+                </div>
+                <div class="login-footer">
+                    <p>Authorized personnel only. All access is monitored and logged.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="main-app" class="page hidden">
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <img src="logo.png?v=3" alt="EMS Logo" class="sidebar-logo">
+                    <span class="sidebar-title">EMS</span>
+                    <button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar">
+                        <svg class="toggle-hamburger" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                        <svg class="toggle-close hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="3" x2="12" y2="21"/></svg>
+                    </button>
+                </div>
+                <nav class="sidebar-nav">
+                    <button class="side-link active" data-page="dashboard" onclick="showPage('dashboard')">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                        <span>Dashboard</span>
+                    </button>
+                    <button class="side-link" data-page="events" onclick="showPage('events')">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                        <span>Events</span>
+                    </button>
+                    <button class="side-link nav-distress" data-page="distress" onclick="showPage('distress')">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        <span>Distress</span>
+                    </button>
+                    <button class="side-link" data-page="messages" onclick="showPage('messages')">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        <span>Messages</span>
+                    </button>
+                    <button class="side-link" data-page="alerts" onclick="showPage('alerts')">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                        <span>Alerts</span>
+                    </button>
+                    <button class="side-link nav-admin" data-page="admin" onclick="showPage('admin')">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        <span>Admin</span>
+                    </button>
+                </nav>
+                <div class="sidebar-footer">
+                    <button id="sos-btn" class="btn btn-sos hidden" onclick="handleSOS()">SOS</button>
+                    <div class="sidebar-user">
+                        <span id="user-badge" class="user-badge"></span>
+                        <div class="sidebar-user-info">
+                            <span id="user-name" class="sidebar-user-name"></span>
+                            <span id="user-role" class="sidebar-user-role"></span>
+                        </div>
+                    </div>
+                    <div class="sidebar-actions">
+                        <button class="side-action" onclick="toggleTheme()" title="Toggle Theme">
+                            <svg class="theme-icon-light" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                            <svg class="theme-icon-dark hidden" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                        </button>
+                        <button class="side-action" onclick="showProfileModal()" title="Profile">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </button>
+                        <button class="side-action" onclick="handleLogout()" title="Sign Out">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="main-content">
+                <div id="announcements-bar" class="announcements-bar hidden"></div>
+                <div id="map-container" class="section hidden" style="margin-bottom:16px;">
+                    <div class="page-header"><h2>Incident Map</h2><button class="btn btn-small btn-outline" onclick="document.getElementById('map-container').classList.add('hidden')">Close</button></div>
+                    <div id="event-map" style="height:300px;border-radius:8px;"></div>
+                </div>
+                <div id="page-dashboard" class="page-content active">
+                    <div class="page-header">
+                        <h1>Dashboard</h1>
+                        <div class="header-actions"></div>
+                    </div>
+                    <div class="stats-grid" id="dashboard-stats">
+                        <div class="stat-card stat-critical">
+                            <div class="stat-value" id="stat-critical">0</div>
+                            <div class="stat-label">Critical Events</div>
+                        </div>
+                        <div class="stat-card stat-active">
+                            <div class="stat-value" id="stat-active">0</div>
+                            <div class="stat-label">Active Events</div>
+                        </div>
+                        <div class="stat-card stat-alerts">
+                            <div class="stat-value" id="stat-alerts">0</div>
+                            <div class="stat-label">Unacknowledged Alerts</div>
+                        </div>
+                        <div class="stat-card stat-users">
+                            <div class="stat-value" id="stat-users">0</div>
+                            <div class="stat-label">Active Users</div>
+                        </div>
+                    </div>
+                    <div class="section">
+                        <h2>Active Events</h2>
+                        <div id="dashboard-events-list" class="events-list">
+                            <p class="empty-state">No active events</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="page-events" class="page-content">
+                    <div class="page-header">
+                        <h1>Emergency Events</h1>
+                        <button id="create-event-btn" class="btn btn-primary hidden" onclick="showCreateEventModal()">Create Event</button>
+                        <button class="btn btn-small btn-outline" onclick="showEventMap()">Show Map</button>
+                        <button class="btn btn-small btn-outline" onclick="printReport()">Print Report</button>
+                    </div>
+                    <div class="section">
+                        <div class="filter-bar">
+                            <select id="event-filter" onchange="loadEvents()">
+                                <option value="active">Active Events</option>
+                                <option value="resolved">Resolved</option>
+                                <option value="archived">Archived</option>
+                                <option value="all">All</option>
+                            </select>
+                        </div>
+                        <div id="events-list" class="events-list">
+                            <p class="empty-state">Loading events...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="page-distress" class="page-content">
+                    <div class="page-header">
+                        <h1>Distress Signals</h1>
+                        <button id="send-distress-btn" class="btn btn-danger hidden" onclick="showSendDistressModal()">Send Distress Signal</button>
+                    </div>
+                    <div class="section">
+                        <div id="distress-list" class="distress-list">
+                            <p class="empty-state">Loading distress signals...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="page-messages" class="page-content">
+                    <div class="page-header">
+                        <h1>Event Messages</h1>
+                    </div>
+                    <div class="section">
+                        <div class="filter-bar">
+                            <select id="message-event-select" onchange="loadMessages()">
+                                <option value="">Select an event to view messages</option>
+                            </select>
+                        </div>
+                        <div id="message-board" class="message-board">
+                            <div class="message-board-placeholder">
+                                <p>Select an event above to view its message thread.</p>
+                            </div>
+                        </div>
+                        <div id="message-input-area" class="message-input-area hidden">
+                            <div id="quick-replies" class="quick-replies hidden">
+                                <button class="btn btn-quick" onclick="sendQuickMessage('I need help, please respond')">Need Help</button>
+                                <button class="btn btn-quick" onclick="sendQuickMessage('I am safe and accounted for')">I am Safe</button>
+                                <button class="btn btn-quick" onclick="sendQuickMessage('I need medical assistance')">Need Medical</button>
+                                <button class="btn btn-quick" onclick="sendQuickMessage('I need food and water supplies')">Need Supplies</button>
+                                <button class="btn btn-quick" onclick="sendQuickMessage('There are injured people here')">Injured Here</button>
+                                <button class="btn btn-quick" onclick="sendQuickMessage('What is the current status?')">Status?</button>
+                                <button class="btn btn-quick" onclick="sendQuickMessage('I am trapped, need rescue')">Trapped</button>
+                            </div>
+                            <textarea id="message-input" rows="3" placeholder="Type your message here..."></textarea>
+                            <div class="message-input-controls">
+                                <select id="message-priority">
+                                    <option value="normal">Normal</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                                <button class="btn btn-primary" onclick="window.sendMessage()">Send</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="page-alerts" class="page-content">
+                    <div class="page-header">
+                        <h1>Alerts</h1>
+                        <button id="create-alert-btn" class="btn btn-danger hidden" onclick="showCreateAlertModal()">Dispatch Alert</button>
+                    </div>
+                    <div class="section">
+                        <div class="filter-bar">
+                            <select id="alert-filter" onchange="loadAlerts()">
+                                <option value="active">Active Alerts</option>
+                                <option value="all">All Alerts</option>
+                            </select>
+                        </div>
+                        <div id="alerts-list" class="alerts-list">
+                            <p class="empty-state">Loading alerts...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="page-admin" class="page-content">
+                    <div class="page-header">
+                        <h1>Administration</h1>
+                    </div>
+                    <div class="admin-tabs">
+                        <button class="admin-tab active" data-admin-tab="users" onclick="showAdminTab('users')">Users</button>
+                        <button class="admin-tab" data-admin-tab="system" onclick="showAdminTab('system')">System</button>
+                        <button class="admin-tab" data-admin-tab="logs" onclick="showAdminTab('logs')">Audit Log</button>
+                        <button class="admin-tab" data-admin-tab="xml" onclick="showAdminTab('xml')">XML Tools</button>
+                    </div>
+
+                    <div id="admin-users" class="admin-panel active">
+                        <h2>User Management</h2>
+                        <div id="users-list" class="users-list"><p class="empty-state">Loading users...</p></div>
+                    </div>
+
+                    <div id="admin-system" class="admin-panel">
+                        <h2>System Automation</h2>
+                        <div class="system-actions">
+                            <div class="action-card" onclick="runHealthCheck()"><h3>Health Check</h3><p>Run system diagnostics</p></div>
+                            <div class="action-card" onclick="generateReport()"><h3>Daily Report</h3><p>Generate activity report</p></div>
+                            <div class="action-card" onclick="runArchive()"><h3>Archive Events</h3><p>Archive old resolved events</p></div>
+                            <div class="action-card" onclick="runEscalate()"><h3>Escalate Alerts</h3><p>Escalate unattended alerts</p></div>
+                            <div class="action-card" onclick="retryDeadLetter()"><h3>Retry Dead Letters</h3><p>Retry failed messages</p></div>
+                        </div>
+                        <div id="system-output" class="system-output"></div>
+                    </div>
+
+                    <div id="admin-logs" class="admin-panel">
+                        <h2>Audit Log</h2>
+                        <div id="audit-logs-list" class="logs-list"><p class="empty-state">Loading logs...</p></div>
+                    </div>
+
+                    <div id="admin-xml" class="admin-panel">
+                        <h2>XML Data Transformation</h2>
+                        <div class="xml-tools">
+                            <div class="xml-section">
+                                <h3>Export Messages to XML</h3>
+                                <div class="filter-bar">
+                                    <select id="xml-export-event"><option value="">Select event to export</option></select>
+                                    <button class="btn btn-primary" onclick="exportMessagesXML()">Export as XML</button>
+                                </div>
+                            </div>
+                            <div class="xml-section">
+                                <h3>Import Messages from XML</h3>
+                                <textarea id="xml-import-input" rows="8" placeholder="Paste XML data here..."></textarea>
+                                <button class="btn btn-primary" onclick="importMessagesXML()">Import from XML</button>
+                                <div id="xml-import-result"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Create Event Modal -->
+        <div id="create-event-modal" class="modal hidden">
+            <div class="modal-backdrop" onclick="hideModal('create-event-modal')"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Create Emergency Event</h2>
+                    <button class="modal-close" onclick="hideModal('create-event-modal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="event-title">Event Title</label>
+                        <input type="text" id="event-title" class="form-input" placeholder="Enter event title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="event-severity">Severity</label>
+                        <select id="event-severity" class="form-input">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                            <option value="critical">Critical</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="event-location">Location (optional)</label>
+                        <input type="text" id="event-location" class="form-input" placeholder="Enter location">
+                    </div>
+                    <div class="form-group">
+                        <label for="event-description">Description</label>
+                        <textarea id="event-description" class="form-input" rows="4" placeholder="Describe the emergency event"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" onclick="hideModal('create-event-modal')">Cancel</button>
+                    <button class="btn btn-primary" onclick="window.createEvent()">Create Event</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dispatch Alert Modal -->
+        <div id="create-alert-modal" class="modal hidden">
+            <div class="modal-backdrop" onclick="hideModal('create-alert-modal')"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Dispatch Alert</h2>
+                    <button class="modal-close" onclick="hideModal('create-alert-modal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="alert-event">Event</label>
+                        <select id="alert-event" class="form-input"><option value="">Select event</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="alert-type">Alert Type</label>
+                        <select id="alert-type" class="form-input">
+                            <option value="evacuation">Evacuation</option>
+                            <option value="lockdown">Lockdown</option>
+                            <option value="medical">Medical</option>
+                            <option value="fire">Fire</option>
+                            <option value="weather">Weather</option>
+                            <option value="security">Security</option>
+                            <option value="test">Test</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="alert-target">Target Role</label>
+                        <select id="alert-target" class="form-input">
+                            <option value="all">All Personnel</option>
+                            <option value="admin">Administrators</option>
+                            <option value="responder">Responders</option>
+                            <option value="operator">Operators</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="alert-title">Alert Title</label>
+                        <input type="text" id="alert-title" class="form-input" placeholder="Alert title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="alert-message">Alert Message</label>
+                        <textarea id="alert-message" class="form-input" rows="4" placeholder="Alert message content"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" onclick="hideModal('create-alert-modal')">Cancel</button>
+                    <button class="btn btn-danger" onclick="dispatchAlert()">Dispatch Alert</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Send Distress Signal Modal -->
+        <div id="send-distress-modal" class="modal hidden">
+            <div class="modal-backdrop" onclick="hideModal('send-distress-modal')"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Send Distress Signal</h2>
+                    <button class="modal-close" onclick="hideModal('send-distress-modal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="distress-title">What do you need help with?</label>
+                        <input type="text" id="distress-title" class="form-input" placeholder="e.g. Need medical assistance" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="distress-description">Description (optional)</label>
+                        <textarea id="distress-description" class="form-input" rows="4" placeholder="Describe your situation..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="distress-location">Your Location (optional)</label>
+                        <input type="text" id="distress-location" class="form-input" placeholder="e.g. Building 3, Floor 2">
+                    </div>
+                    <div class="form-group">
+                        <label for="distress-event">Related Emergency Event (optional)</label>
+                        <select id="distress-event" class="form-input"><option value="">Not related to a specific event</option></select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" onclick="hideModal('send-distress-modal')">Cancel</button>
+                    <button class="btn btn-danger" onclick="sendDistressSignal()">Send Signal</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Profile Modal -->
+        <div id="profile-modal" class="modal hidden">
+            <div class="modal-backdrop" onclick="hideModal('profile-modal')"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Edit Profile</h2>
+                    <button class="modal-close" onclick="hideModal('profile-modal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="profile-name">Display Name</label>
+                        <input type="text" id="profile-name" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-email">Email</label>
+                        <input type="email" id="profile-email" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-phone">Phone</label>
+                        <input type="text" id="profile-phone" class="form-input" placeholder="Optional phone number">
+                    </div>
+                    <div class="form-group">
+                        <label>Profile Picture</label>
+                        <div class="avatar-upload">
+                            <img id="profile-avatar-preview" class="avatar-preview hidden" alt="Preview">
+                            <input type="file" id="profile-avatar-input" class="form-input" accept="image/jpeg,image/png,image/gif,image/webp">
+                            <button class="btn btn-small btn-outline" onclick="document.getElementById('profile-avatar-input').click()">Choose File</button>
+                            <span id="profile-avatar-name" class="avatar-file-name"></span>
+                        </div>
+                    </div>
+                    <hr style="border:none;border-top:1px solid var(--border-color);margin:16px 0;">
+                    <h3 style="font-size:14px;margin-bottom:12px;">Emergency Contact</h3>
+                    <p style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">This person will be notified when you send an SOS or distress signal.</p>
+                    <div class="form-group">
+                        <label for="profile-emergency-name">Contact Name</label>
+                        <input type="text" id="profile-emergency-name" class="form-input" placeholder="e.g. John Doe">
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-emergency-phone">Contact Phone</label>
+                        <input type="text" id="profile-emergency-phone" class="form-input" placeholder="e.g. +1 555-123-4567">
+                    </div>
+                    <hr style="border:none;border-top:1px solid var(--border-color);margin:16px 0;">
+                    <h3 style="font-size:14px;margin-bottom:12px;">Change Password (optional)</h3>
+                    <div class="form-group">
+                        <label for="profile-current-pw">Current Password</label>
+                        <input type="password" id="profile-current-pw" class="form-input" autocomplete="current-password">
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-new-pw">New Password (min. 6 characters)</label>
+                        <input type="password" id="profile-new-pw" class="form-input" autocomplete="new-password">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" onclick="hideModal('profile-modal')">Cancel</button>
+                    <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="toast" class="toast hidden"></div>
+    </div>
+
+    <script src="js/utils/api.js?v=2"></script>
+    <script src="js/utils/xmlParser.js?v=2"></script>
+    <script src="js/components/Login.js?v=2"></script>
+    <script src="js/components/Dashboard.js?v=2"></script>
+    <script src="js/components/MessageBoard.js?v=2"></script>
+    <script src="js/components/AlertPanel.js?v=2"></script>
+    <script src="js/components/UserManagement.js?v=2"></script>
+    <script src="js/components/Distress.js?v=2"></script>
+    <script src="js/app.js?v=2"></script>
+</body>
+</html>

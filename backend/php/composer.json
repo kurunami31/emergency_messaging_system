@@ -1,0 +1,29 @@
+{
+    "name": "emergency/messaging-system",
+    "description": "Emergency Messaging System Backend",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "App\\": ""
+        }
+    },
+    "require": {
+        "php": ">=8.0",
+        "ext-pdo": "*",
+        "ext-curl": "*",
+        "ext-dom": "*",
+        "ext-json": "*"
+    },
+    "suggest": {
+        "ext-xsl": "Required for XSLT-based XML report transformations"
+    },
+    "scripts": {
+        "serve": "php -S 0.0.0.0:8000 index.php",
+        "automate:archive": "php scripts/auto_archive.php",
+        "automate:escalate": "php scripts/escalate_alerts.php",
+        "automate:health": "php scripts/health_check.php"
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}

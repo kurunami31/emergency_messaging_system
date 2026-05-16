@@ -1,0 +1,9 @@
+{
+    "name": "emergency-messaging-frontend",
+    "version": "1.0.0",
+    "description": "Emergency Messaging System - Frontend",
+    "scripts": {
+        "start": "node server/server.js",
+        "dev": "node server/server.js"
+    }
+}
