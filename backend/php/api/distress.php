@@ -6,6 +6,7 @@ use App\Middleware\AuthMiddleware;
 use App\Models\BaseModel;
 use App\Models\AuditLog;
 use App\Models\User;
+use App\Models\Alert;
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
@@ -96,8 +97,14 @@ switch ($method) {
         if (!$title) { http_response_code(400); echo json_encode(['error' => 'Title is required']); exit; }
         if ($user['role'] !== User::ROLE_VICTIM) { http_response_code(403); echo json_encode(['error' => 'Only victims can send distress signals']); exit; }
 
-        $signalId = $distressModel->createSignal($user['id'], $title, trim($input['description'] ?? ''), trim($input['location'] ?? ''), isset($input['event_id']) ? (int)$input['event_id'] : null);
+        $eventId = isset($input['event_id']) ? (int)$input['event_id'] : null;
+        $signalId = $distressModel->createSignal($user['id'], $title, trim($input['description'] ?? ''), trim($input['location'] ?? ''), $eventId);
         $signal = $distressModel->getSignalById($signalId);
+
+        if ($eventId) {
+            $alert = new Alert();
+            $alert->createAlert($eventId, 'test', 'all', "Distress: $title", "Victim {$user['display_name']} sent a distress signal: $title" . (!empty($input['location']) ? " at {$input['location']}" : ''));
+        }
 
         $contactNotified = '';
         if (!empty($user['emergency_contact_name'])) {

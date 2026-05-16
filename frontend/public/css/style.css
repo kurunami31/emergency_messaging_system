@@ -232,6 +232,15 @@ body {
 
 .side-link svg { flex-shrink: 0; }
 
+.side-link { position: relative; }
+.nav-badge {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    background: var(--color-danger); color: white; font-size: 10px; font-weight: 700;
+    min-width: 18px; height: 18px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 4px; line-height: 1;
+}
+
 .btn-sos {
     display: flex;
     align-items: center;
@@ -483,6 +492,41 @@ body {
 .toast.success { background: linear-gradient(135deg, var(--color-success), #22c55e); }
 @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
+.chat-container { display: flex; flex-direction: column; height: calc(100vh - 140px); background: var(--bg-primary); border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; }
+.chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 6px; }
+.chat-msg { padding: 10px 14px; border-radius: 10px; background: var(--bg-secondary); max-width: 80%; align-self: flex-start; animation: fadeIn 0.2s ease; }
+.chat-msg-mine { background: var(--color-primary); color: white; align-self: flex-end; }
+.chat-msg-mine .chat-msg-sender { color: rgba(255,255,255,0.7); }
+.chat-msg-mine .chat-msg-time { color: rgba(255,255,255,0.5); }
+.chat-msg-system { background: transparent; align-self: center; text-align: center; font-size: 12px; color: var(--text-light); max-width: 100%; padding: 4px 8px; }
+.chat-msg-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px; }
+.chat-msg-sender { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.3px; }
+.chat-msg-time { font-size: 10px; color: var(--text-light); }
+.chat-msg-content { font-size: 14px; line-height: 1.5; word-break: break-word; white-space: pre-wrap; }
+.chat-input-area { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border-color); background: var(--bg-primary); align-items: flex-end; }
+.chat-input { flex: 1; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 14px; font-size: 14px; font-family: var(--font-family); background: var(--bg-secondary); color: var(--text-primary); resize: none; outline: none; transition: var(--transition); }
+.chat-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+.hotlines-note { font-size: 14px; color: var(--text-secondary); margin-bottom: 18px; padding: 12px 16px; background: var(--bg-secondary); border-radius: 8px; border-left: 4px solid var(--color-primary); }
+.hotlines-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+.hotline-card { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; transition: var(--transition); }
+.hotline-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.hotline-card-header { margin-bottom: 12px; }
+.hotline-category { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-primary); background: rgba(37,99,235,0.1); padding: 2px 10px; border-radius: 4px; margin-bottom: 6px; }
+.hotline-agency { display: block; font-size: 14px; font-weight: 600; color: var(--text-primary); margin-top: 4px; }
+.hotline-numbers { display: flex; flex-wrap: wrap; gap: 8px; }
+.hotline-number { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: var(--color-primary); color: white; font-size: 14px; font-weight: 700; border-radius: 8px; text-decoration: none; transition: var(--transition); letter-spacing: 0.3px; }
+.hotline-number:hover { background: var(--color-primary-dark, #1d4ed8); transform: scale(1.03); }
+
+.hotlines-strip { display: flex; flex-direction: column; gap: 6px; }
+.hotline-strip-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: var(--transition); gap: 12px; overflow: hidden; }
+.hotline-strip-item:hover { background: var(--bg-secondary); border-color: var(--color-primary); }
+.hotline-strip-agency { font-size: 13px; font-weight: 600; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.hotline-strip-numbers { font-size: 13px; font-weight: 700; color: var(--color-primary); font-family: monospace; text-align: right; flex-shrink: 0; }
+.hotline-strip-more { justify-content: center; color: var(--color-primary); font-size: 13px; font-weight: 600; }
+
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
@@ -504,6 +548,8 @@ body {
     .login-container { padding: 12px; }
     .login-card { padding: 24px 20px; }
     .filter-bar { flex-direction: column; align-items: stretch; }
+    .chat-container { height: calc(100vh - 180px); }
+    .chat-msg { max-width: 90%; }
 }
 
 @media (max-width: 480px) {

@@ -32,6 +32,8 @@ $routes = [
     '/alerts' => __DIR__ . '/api/alerts.php',
     '/users' => __DIR__ . '/api/users.php',
     '/distress' => __DIR__ . '/api/distress.php',
+    '/chat' => __DIR__ . '/api/chat.php',
+    '/hotlines' => __DIR__ . '/api/hotlines.php',
     '/system' => __DIR__ . '/api/system.php',
 ];
 

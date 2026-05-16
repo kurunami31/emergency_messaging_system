@@ -82,7 +82,7 @@ function updateUIForRole() {
     var adminNav = document.querySelector('.side-link[data-page="admin"]');
     if (adminNav) adminNav.classList.toggle('hidden', !canAccessAdmin);
     var distressNav = document.querySelector('.side-link[data-page="distress"]');
-    if (distressNav) distressNav.classList.toggle('hidden', isAdmin);
+    if (distressNav) distressNav.classList.remove('hidden');
 }
 
 async function initApp() {

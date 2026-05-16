@@ -3,6 +3,9 @@ var WS_URL = 'ws://127.0.0.1:3001';
 let wsConnection = null;
 let authToken = null;
 let currentUser = null;
+let distressPollInterval = null;
+let lastDistressCount = 0;
+let knownDistressIds = new Set();
 
 async function apiRequest(endpoint, options) {
     if (!options) options = {};
@@ -48,10 +51,57 @@ function connectWebSocket() {
 }
 
 function handleWebSocketMessage(msg) {
-    if (msg.type === 'message' || msg.type === 'alert') {
+    if (msg.type === 'message' || msg.type === 'alert' || msg.type === 'distress') {
         loadDashboardStats();
         if (msg.type === 'alert') showToast('New alert: ' + (msg.data.title || ''), 'error');
+        if (msg.type === 'distress') showToast('New distress signal: ' + (msg.data.title || ''), 'error');
     }
+}
+
+function startDistressPolling() {
+    stopDistressPolling();
+    distressPollInterval = setInterval(function () {
+        if (currentUser && currentUser.role !== 'victim') {
+            pollDistressSignals();
+        }
+    }, 10000);
+}
+
+function stopDistressPolling() {
+    if (distressPollInterval) {
+        clearInterval(distressPollInterval);
+        distressPollInterval = null;
+    }
+}
+
+async function pollDistressSignals() {
+    try {
+        var data = await apiRequest('/distress');
+        var signals = data.signals || [];
+        var currentIds = new Set(signals.map(function (s) { return s.id; }));
+        if (knownDistressIds.size > 0) {
+            var newSignals = signals.filter(function (s) { return !knownDistressIds.has(s.id) && s.status === 'active'; });
+            for (var i = 0; i < newSignals.length; i++) {
+                showToast('New distress signal from ' + (newSignals[i].victim_name || 'a victim') + ': ' + newSignals[i].title, 'error');
+            }
+        }
+        knownDistressIds = currentIds;
+        lastDistressCount = signals.length;
+        var badge = document.querySelector('.side-link[data-page="distress"] .nav-badge');
+        if (!badge && signals.length > 0) {
+            var link = document.querySelector('.side-link[data-page="distress"]');
+            if (link) {
+                badge = document.createElement('span');
+                badge.className = 'nav-badge';
+                link.appendChild(badge);
+            }
+        }
+        if (badge) {
+            var activeCount = signals.filter(function (s) { return s.status === 'active'; }).length;
+            badge.textContent = activeCount > 0 ? activeCount : '';
+            badge.style.display = activeCount > 0 ? '' : 'none';
+        }
+    } catch (e) {}
 }
 
 async function handleGoogleLogin() {
@@ -313,7 +363,13 @@ async function updateUserRole(userId, role) {
 }
 
 async function loadDistressSignals() {
-    try { var data = await apiRequest('/distress'); renderDistressSignals(data.signals || []); }
+    try {
+        var data = await apiRequest('/distress');
+        var signals = data.signals || [];
+        knownDistressIds = new Set(signals.map(function (s) { return s.id; }));
+        lastDistressCount = signals.length;
+        renderDistressSignals(signals);
+    }
     catch (err) { showToast('Failed to load distress signals: ' + err.message, 'error'); }
 }
 
@@ -573,7 +629,31 @@ async function loadDashboardStats() {
         renderDashboardEvents(events);
         try { var alertData = await apiRequest('/alerts'); document.getElementById('stat-alerts').textContent = (alertData.alerts || []).filter(function (a) { return !a.is_acknowledged; }).length; } catch (e) {}
         try { var userData = await apiRequest('/users'); document.getElementById('stat-users').textContent = (userData.users || []).length; } catch (e) {}
+        try { var hlData = await apiRequest('/hotlines'); renderDashboardHotlines(hlData.hotlines || []); } catch (e) {}
     } catch (err) { console.error('Failed to load dashboard stats:', err); }
+}
+
+function renderDashboardHotlines(hotlines) {
+    var container = document.getElementById('dashboard-hotlines-list');
+    if (!container) return;
+    if (!hotlines || hotlines.length === 0) {
+        container.innerHTML = '<p class="empty-state">No hotlines available.</p>';
+        return;
+    }
+    var html = '';
+    for (var i = 0; i < Math.min(hotlines.length, 4); i++) {
+        var h = hotlines[i];
+        var shortName = h.agency.replace(/\s*\(.*?\)/g, '').trim();
+        if (shortName.length > 30) shortName = shortName.substring(0, 28) + '...';
+        html += '<div class="hotline-strip-item" onclick="showPage(\'hotlines\')">';
+        html += '<span class="hotline-strip-agency">' + escapeHtml(shortName) + '</span>';
+        html += '<span class="hotline-strip-numbers">' + escapeHtml(h.numbers.join(' | ')) + '</span>';
+        html += '</div>';
+    }
+    if (hotlines.length > 4) {
+        html += '<div class="hotline-strip-item hotline-strip-more" onclick="showPage(\'hotlines\')">View all ' + hotlines.length + ' hotlines &rarr;</div>';
+    }
+    container.innerHTML = html;
 }
 
 function showProfileModal() {
@@ -687,8 +767,19 @@ function showPage(pageId) {
         case 'events': loadEvents(); break;
         case 'messages': populateEventSelectors(); break;
         case 'alerts': loadAlerts(); break;
-        case 'distress': loadDistressSignals(); break;
+        case 'distress':
+            startDistressPolling();
+            loadDistressSignals();
+            break;
+        case 'livechat':
+            startChatPolling();
+            break;
+        case 'hotlines': loadHotlines(); break;
         case 'admin': loadUsers(); loadAuditLogs(); populateXMLExportEvents(); break;
+        default:
+            stopDistressPolling();
+            stopChatPolling();
+            break;
     }
 }
 
