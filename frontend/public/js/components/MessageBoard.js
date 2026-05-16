@@ -12,6 +12,7 @@ function populateEventSelectors() {
             defaultOption.textContent = selects[s] === 'alert-event' ? 'Select event for alert' : selects[s] === 'xml-export-event' ? 'Select event to export' : 'Select an event to view messages';
             select.appendChild(defaultOption);
             for (var i = 0; i < events.length; i++) {
+                if (events[i].title === 'Live Chat') continue;
                 var option = document.createElement('option');
                 option.value = events[i].id;
                 option.textContent = (events[i].severity ? '[' + events[i].severity.toUpperCase() + '] ' : '') + events[i].title;

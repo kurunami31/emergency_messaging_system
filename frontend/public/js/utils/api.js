@@ -623,37 +623,13 @@ async function showTimeline(eventId, eventTitle) {
 async function loadDashboardStats() {
     try {
         var data = await apiRequest('/events');
-        var events = data.events || [];
+        var events = (data.events || []).filter(function (e) { return e.title !== 'Live Chat'; });
         document.getElementById('stat-critical').textContent = events.filter(function (e) { return e.severity === 'critical' && e.status === 'active'; }).length;
         document.getElementById('stat-active').textContent = events.filter(function (e) { return e.status === 'active'; }).length;
         renderDashboardEvents(events);
         try { var alertData = await apiRequest('/alerts'); document.getElementById('stat-alerts').textContent = (alertData.alerts || []).filter(function (a) { return !a.is_acknowledged; }).length; } catch (e) {}
         try { var userData = await apiRequest('/users'); document.getElementById('stat-users').textContent = (userData.users || []).length; } catch (e) {}
-        try { var hlData = await apiRequest('/hotlines'); renderDashboardHotlines(hlData.hotlines || []); } catch (e) {}
     } catch (err) { console.error('Failed to load dashboard stats:', err); }
-}
-
-function renderDashboardHotlines(hotlines) {
-    var container = document.getElementById('dashboard-hotlines-list');
-    if (!container) return;
-    if (!hotlines || hotlines.length === 0) {
-        container.innerHTML = '<p class="empty-state">No hotlines available.</p>';
-        return;
-    }
-    var html = '';
-    for (var i = 0; i < Math.min(hotlines.length, 4); i++) {
-        var h = hotlines[i];
-        var shortName = h.agency.replace(/\s*\(.*?\)/g, '').trim();
-        if (shortName.length > 30) shortName = shortName.substring(0, 28) + '...';
-        html += '<div class="hotline-strip-item" onclick="showPage(\'hotlines\')">';
-        html += '<span class="hotline-strip-agency">' + escapeHtml(shortName) + '</span>';
-        html += '<span class="hotline-strip-numbers">' + escapeHtml(h.numbers.join(' | ')) + '</span>';
-        html += '</div>';
-    }
-    if (hotlines.length > 4) {
-        html += '<div class="hotline-strip-item hotline-strip-more" onclick="showPage(\'hotlines\')">View all ' + hotlines.length + ' hotlines &rarr;</div>';
-    }
-    container.innerHTML = html;
 }
 
 function showProfileModal() {

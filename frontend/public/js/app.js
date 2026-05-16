@@ -111,6 +111,22 @@ function showApp() {
     loadDashboardStats();
     loadAnnouncements();
     connectWebSocket();
+    showIntro();
+}
+
+function showIntro() {
+    if (sessionStorage.getItem('ems_intro_shown')) {
+        showPage('dashboard');
+        return;
+    }
+    document.getElementById('intro-username').textContent = currentUser.display_name || '';
+    document.getElementById('intro-role').textContent = currentUser.role || '';
+    document.getElementById('intro-overlay').classList.remove('hidden');
+}
+
+function dismissIntro() {
+    sessionStorage.setItem('ems_intro_shown', '1');
+    document.getElementById('intro-overlay').classList.add('hidden');
     showPage('dashboard');
 }
 
